@@ -110,41 +110,115 @@ PORTD |= (1 << PD6); // For Integer 6
 PORTD |= (1 << PD7); // For Integer 7
 PORTC |= (1 << PC0); // For Integer 8
 PORTC |= (1 << PC1); // For Integer 9
-PORTC |= (1 << PC2); // For Symbol +
-PORTC |= (1 << PC3); // For Symbol -
-PORTC |= (1 << PC4); // For Symbol /
-PORTC |= (1 << PC5); // For Symbol X
+PORTC |= (1 << PC2); // For Clear 
+PORTC |= (1 << PC3); // For Equal 
+PORTC |= (1 << PC4); // For Function 
+PORTC |= (1 << PC5); // For .
 
-
+int del = 400;
 
 LCD_Clear();
 while (1)
 {
 	//LCD_Cmd(0XC0);
 	//LCD_Clear();
-if (bit_is_clear( PIND, PD2))
-{
-LCD_Integer(1);
-_delay_ms(600); 
-//LCD_Cmd(0x14);
-}
- 
 if (bit_is_clear( PIND, PD0))
 {
+LCD_Integer(0);
+_delay_ms(del); 
+//LCD_Cmd(0x14);
+}
+
+if (bit_is_clear( PIND, PD1))
+{
+LCD_Integer(1);
+_delay_ms(del); 
+//LCD_Cmd(0x14);
+}
+
+if (bit_is_clear( PIND, PD2))
+{
 LCD_Integer(2);
-_delay_ms(600); 
+_delay_ms(del); 
+//LCD_Cmd(0x14);
+}
+
+if (bit_is_clear( PIND, PD3))
+{
+LCD_Integer(3);
+_delay_ms(del); 
+//LCD_Cmd(0x14);
+}
+
+if (bit_is_clear( PIND, PD4))
+{
+LCD_Integer(4);
+_delay_ms(del); 
 //LCD_Cmd(0x14);
 }
 
 if (bit_is_clear( PIND, PD5))
 {
-LCD_Integer(3);
-_delay_ms(600); 
+LCD_Integer(5);
+_delay_ms(del); 
 //LCD_Cmd(0x14);
 }
 
-if(bit_is_clear(PIND,PD4)){
+if (bit_is_clear( PIND, PD6))
+{
+LCD_Integer(6);
+_delay_ms(del); 
+//LCD_Cmd(0x14);
+}
+
+if (bit_is_clear( PIND, PD7))
+{
+LCD_Integer(7);
+_delay_ms(del); 
+//LCD_Cmd(0x14);
+}
+
+if (bit_is_clear( PINC, PC0))
+{
+LCD_Integer(8);
+_delay_ms(del); 
+//LCD_Cmd(0x14);
+}
+
+if (bit_is_clear( PINC, PC1))
+{
+LCD_Integer(9);
+_delay_ms(del); 
+//LCD_Cmd(0x14);
+}
+ 
+if(bit_is_clear(PINC,PC2)){
 	LCD_Clear();
+}
+ 
+//~ if(bit_is_clear(PINC,PC3)){
+	//~ LCD_Clear();
+//~ }
+ 
+if(bit_is_clear(PINC,PC4) && bit_is_clear( PIND, PD0)){
+	LCD_Message('+');
+	_delay_ms(del);	
+}
+
+if(bit_is_clear(PINC,PC4) && bit_is_clear( PIND, PD1)){
+	LCD_Message('-');	
+}
+
+if(bit_is_clear(PINC,PC4) && bit_is_clear( PIND, PD2)){
+	LCD_Message('X');	
+}
+
+if(bit_is_clear(PINC,PC4) && bit_is_clear( PIND, PD3)){
+	LCD_Message('/');	
+}
+ 
+if(bit_is_clear(PINC,PC5)){
+	LCD_Message('.');
 }
 
 }
