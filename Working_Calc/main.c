@@ -536,12 +536,9 @@ if(i==1){
 LCD_Cmd(0x10);
 LCD_Cmd(0x10);
 LCD_Cmd(0x10);
-LCD_Cmd(0x10);
 LCD_Char(' ');
 LCD_Char(' ');
 LCD_Char(' ');
-LCD_Char(' ');
-LCD_Cmd(0x10);
 LCD_Cmd(0x10);
 LCD_Cmd(0x10);
 LCD_Cmd(0x10);
@@ -626,6 +623,13 @@ opcalc();
  }
 op = key;
 break;
+
+default:
+LCD_Message("Removing Shift");
+_delay_ms(1000);
+LCD_Clear();
+break;
+
 }
 }
 _delay_ms(700);
@@ -634,145 +638,7 @@ _delay_ms(700);
 
 }
  
-void Circ_Init(void)
-{
 
-// Use PB pins for LCD interface
-// Use PD pins for rows
-// Use PC pins for coloumns
- 
-DDRB = 0xFF; // 1111.1111; set PB0-PB7 as outputs
-DDRD=0b00000000; // Set PD4-PD7 as i/p
-DDRC=0xFF;// Set PC0-PC5 as o/p
-PORTD = 0xFF;    //enable all internal pull-ups  
-return;
-
-}
-
-char READ_SWITCHES()
-{
-PORTC = 0b00000000;// Turn all rows to LOW
-PORTD = 0b11111000;// Enable Pull-ups
-
-//Check which coloumn has LOW i/p
-if (!(PIND & (1<<PD4)))
-{
-// Change corresponding rows and check the i/p
-PORTC=0b00001110;
-PORTC=PORTC;
-if (!(PIND & (1<<PD4)))
-return '/';
-PORTC=0b00001101;
-PORTC=PORTC;
-if (!(PIND & (1<<PD4)))
-return '6';
-PORTC=0b00001011;
-PORTC=PORTC;
-if (!(PIND & (1<<PD4)))
-return '5';
-PORTC=0b00000111;
-PORTC=PORTC;
-if (!(PIND & (1<<PD4)))
-return '4';
-}
-else if (!(PIND & (1<<PD5)))
-{
-PORTC=0b00001110;
-PORTC=PORTC;
-if (!(PIND & (1<<PD5)))
-return '*';
-PORTC=0b00001101;
-PORTC=PORTC;
-if (!(PIND & (1<<PD5)))
-return '3';
-PORTC=0b00001011;
-PORTC=PORTC;
-if (!(PIND & (1<<PD5)))
-return '2';
-PORTC=0b00000111;
-PORTC=PORTC;
-if (!(PIND & (1<<PD5)))
-return '1';
-}
-
-else if (!(PIND & (1<<PD6)))
-{
-PORTC=0b00001110;
-PORTC=PORTC;
-if (!(PIND & (1<<PD6)))
-return '-';
-PORTC=0b00001101;
-PORTC=PORTC;
-if (!(PIND & (1<<PD6)))
-return '+';
-PORTC=0b00001011;
-PORTC=PORTC;
-if (!(PIND & (1<<PD6)))
-return '.';
-PORTC=0b00000111;
-PORTC=PORTC;
-if (!(PIND & (1<<PD6)))
-return '0';
-}
-
-else if (!(PIND & (1<<PD7)))
-{
-PORTC=0b00001110;
-PORTC=PORTC;
-if (!(PIND & (1<<PD7)))
-return '=';
-PORTC=0b00001101;
-PORTC=PORTC;
-if (!(PIND & (1<<PD7)))
-return 'o';
-PORTC=0b00001011;
-PORTC=PORTC;
-if (!(PIND & (1<<PD7))){
-return 's';
-}
-PORTC=0b00000111;
-PORTC=PORTC;
-if (!(PIND & (1<<PD7)))
-return 'r';
-}
-
-else if (!(PIND & (1<<PD3)))
-{
-PORTC=0b00001110;
-PORTC=PORTC;
-if (!(PIND & (1<<PD3)))
-return 'c';
-PORTC=0b00001101;
-PORTC=PORTC;
-if (!(PIND & (1<<PD3)))
-return '9';
-PORTC=0b00001011;
-PORTC=PORTC;
-if (!(PIND & (1<<PD3))){
-return '8';
-}
-PORTC=0b00000111;
-PORTC=PORTC;
-if (!(PIND & (1<<PD3)))
-return '7';
-}
-
-
-
-return 'n';           // Means no key has been pressed
-}
-
-
-
-char get_key(void)
-{
-char key = 'n';
-while(key=='n')
-{
-key=READ_SWITCHES();
-}
-return key;
-}
 
 double gen_num(){
 int n = 0;
@@ -849,6 +715,10 @@ break;
 case '/' :
 divide();
 break;
+
+case '^' :
+raise();
+break;
 }
 LCD_Clear();
 LCD_Double(ans);
@@ -873,6 +743,10 @@ ans = n1*n2;
 
 void divide(){
 ans = n1/n2;
+}
+
+void raise(){
+ans = pow(n1,n2);
 }
 
 void calc_clear(){
@@ -901,63 +775,9 @@ switch(op){
  case '/':
  ans = n1 / ans;
  break;
- }
-}
-char* DoubleToStr(double num){
- int start = num >= 0 ? 0 : 1;
- if (start == 1) num = -num;
- int bdp = 0, adp = 0;
- int n = num;
- do {
-        bdp++;
-        n /= 10;
-    } while (n != 0);
-    int temp = 10000;
- n = (int)((num+10e-6 - (int)num)*temp);
- while (n % temp != 0) { temp /= 10; adp++; }
  
- n = (int)num;
- char* str = (char*)malloc((bdp+(start==0 ? 1 : 2))*sizeof(char));
- if (start == 1) str[0] = '-';
- str[bdp+start] = adp == 0 ? '\0' : '.';
- 
- for (int i = 0; i < bdp; i++){
-        str[start + bdp - (i + 1)] = ((n % 10) + '0');
-        n = n / 10;
-    }
-    if (adp == 0) return str;
-    temp = 1;
-    for (int i=0; i<adp; i++) temp *= 10;
-    n = (int)((num+10e-6 - (int)num)*temp);
-   
-    for (int i = 0; i < adp; i++){
-        str[start + (bdp+1) + adp - (i + 1)] = ((n % 10) + '0');
-        n = n / 10;
-    }
-    str[start+bdp+adp+1] = '\0';
- return str;
-}
-int isDigit(char c){ return '0' <= c && c <= '9'; }
-double readNum(const char* str, int *index){
- int mul = 1;
- if (str[*index] == '-'){ (*index)++; mul = -1; }
- double num = 0;
- while (str[*index] != 0){
-  if (!isDigit(str[*index])) break;
-  num *= 10.0;
-  num += str[(*index)++] - '0';
+ case '^':
+ ans = pow(n1,ans);
+ break;
  }
- if (str[*index] != '.') return mul*num;
- (*index)++; double m10 = 10;
- while (str[*index] != 0){
-  if (!isDigit(str[*index])) break;
-  num += (str[(*index)++] - '0')/m10; m10 *= 10;
- }
- return mul*num;
-}
-void LCD_Double(double data)
-// displays the Double value of DATA at current LCD cursor position
-{
- char* st = DoubleToStr(data); // save enough space for result //
- LCD_Message(st); // display in on LCD
 }
